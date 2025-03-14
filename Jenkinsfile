@@ -1,23 +1,24 @@
 pipeline {
     agent any
-
-    environment {
-        IMAGE_NAME = 'sergtito/log-analytics-system'
-        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
-    }
-
     stages {
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
-                git branch: 'master', url: 'https://github.com/SergTito/LogAnalizer.git'
+                git 'https://github.com/SergTito/LogAnalizer.git'
             }
         }
-
-        stage('Login to Docker Hub') {
+        stage('Build') {
             steps {
-                withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID, url: '']) {
-                    sh 'echo "Docker login successful!"'
-                }
+                sh 'mvn clean package'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying...'
             }
         }
     }
