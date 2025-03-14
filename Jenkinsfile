@@ -7,6 +7,12 @@ pipeline {
     }
 
     stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'master', url: 'https://github.com/SergTito/LogAnalizer.git'
+            }
+        }
+
         stage('Login to Docker Hub') {
             steps {
                 withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID, url: '']) {
