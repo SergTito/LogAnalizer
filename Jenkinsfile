@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/SergTito/LogAnalizer.git'
+                git credentialsId: 'github-token', url: 'https://github.com/SergTito/LogAnalizer.git'
             }
         }
         stage('Build') {
