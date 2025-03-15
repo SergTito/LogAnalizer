@@ -17,13 +17,14 @@ pipeline {
 
         stage('Check Code Style') {
             steps {
-                sh 'mvn checkstyle:check' // Проверка code style
+                sh 'mvn checkstyle:checkstyle' // Генерирует XML-отчет
+                recordIssues tools: [checkStyle(pattern: '**/target/checkstyle-result.xml')]
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'mvn test' // Запуск юнит-тестов
+                sh 'mvn test'
             }
         }
 
