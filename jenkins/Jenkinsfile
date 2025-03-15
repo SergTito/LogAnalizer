@@ -18,7 +18,20 @@ pipeline {
         stage('Check Code Style') {
             steps {
                 sh 'mvn checkstyle:checkstyle' // Генерирует XML-отчет
-                recordIssues tools: [checkStyle(pattern: '**/target/checkstyle-result.xml')]
+                archiveArtifacts artifacts: '**/target/checkstyle-result.xml', fingerprint: true
+            }
+        }
+
+        stage('Checkstyle Output') { // Вывод ошибок в консоль
+            steps {
+                sh "grep -o '<error .*message=\"[^\"]*\"' target/checkstyle-result.xml | sed 's/<error.*message=\"//' | sed 's/\"//'"
+            }
+        }
+
+        stage('Generate Checkstyle Report') {
+            steps {
+                sh 'mvn checkstyle:checkstyle'
+                archiveArtifacts artifacts: '**/target/site/checkstyle.html', fingerprint: true
             }
         }
 
