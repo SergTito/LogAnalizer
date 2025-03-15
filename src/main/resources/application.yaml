@@ -9,6 +9,6 @@ spring:
             required-groups: log-group
       kafka:
         binder:
-          brokers: kafka:9093
+          brokers: kafka-1:9093
           auto-create-topics: false
           default-topic: logs-topic

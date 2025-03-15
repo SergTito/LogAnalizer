@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/log_db
+    url: jdbc:postgresql://postgres:5432/log_db
     username: postgres
     password: admin
     driver-class-name: org.postgresql.Driver
@@ -9,4 +9,18 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info
+  health:
+    defaults:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true

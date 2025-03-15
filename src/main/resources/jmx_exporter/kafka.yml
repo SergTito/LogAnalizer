@@ -1,0 +1,17 @@
+lowercaseOutputName: true
+rules:
+  - pattern: 'kafka.server<type=(.+), name=(.+)><>(\w+)'
+    name: kafka_$1_$2_$3
+    labels:
+      type: "$1"
+      name: "$2"
+  - pattern: 'kafka.network<type=(.+), name=(.+)><>(\w+)'
+    name: kafka_$1_$2_$3
+    labels:
+      type: "$1"
+      name: "$2"
+  - pattern: 'kafka.log<type=(.+), name=(.+)><>(\w+)'
+    name: kafka_$1_$2_$3
+    labels:
+      type: "$1"
+      name: "$2"

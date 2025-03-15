@@ -6,6 +6,6 @@ WORKDIR /app
 
 # Копируем JAR-файл в контейнер
 COPY target/log-api-*.jar log-api.jar
-
+EXPOSE 8081
 # Указываем команду для запуска сервиса
 ENTRYPOINT ["java", "-jar", "log-api.jar"]

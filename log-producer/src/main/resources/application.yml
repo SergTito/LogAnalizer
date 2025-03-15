@@ -3,9 +3,27 @@ spring:
     stream:
       bindings:
         output:
-          destination: logs-topic  # ???????? ??????
+          destination: logs-topic
+
       kafka:
         binder:
-          brokers: kafka:9093  # ????? Kafka (????????? "kafka", ??? ??? ??? ??? ??????? ? Docker)
+          brokers: kafka-1:9093
           configuration:
-            max.request.size: 1000000000  # ~1 ?? (????????? ? ??????????? Kafka)
+            max.request.size: 1000000000
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info
+  health:
+    defaults:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
