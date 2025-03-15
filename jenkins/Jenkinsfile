@@ -1,5 +1,6 @@
 pipeline {
     agent any
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -11,6 +12,58 @@ pipeline {
                         credentialsId: 'github-token'
                     ]]
                 ])
+            }
+        }
+
+        stage('Check Code Style') {
+            steps {
+                sh 'mvn checkstyle:check' // Проверка code style
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'mvn test' // Запуск юнит-тестов
+            }
+        }
+
+        stage('Build Services') {
+            parallel {
+                stage('Build log-api') {
+                    steps {
+                        dir('log-api') {
+                            sh 'mvn clean package'
+                        }
+                    }
+                }
+                stage('Build log-processor') {
+                    steps {
+                        dir('log-processor') {
+                            sh 'mvn clean package'
+                        }
+                    }
+                }
+                stage('Build log-producer') {
+                    steps {
+                        dir('log-producer') {
+                            sh 'mvn clean package'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Notify') {
+            steps {
+                script {
+                    def status = currentBuild.result ?: 'SUCCESS'
+                    withCredentials([string(credentialsId: 'telegram-bot-token', variable: 'TELEGRAM_TOKEN')]) {
+                        sh """
+                            curl -X POST 'https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage' \
+                            -d 'chat_id=1893206043&text=Build ${status} 🚀'
+                        """
+                    }
+                }
             }
         }
     }
