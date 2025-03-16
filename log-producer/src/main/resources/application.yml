@@ -1,29 +1,29 @@
+server:
+  port: 0
 spring:
   cloud:
     stream:
-      bindings:
-        output:
-          destination: logs-topic
-
       kafka:
         binder:
-          brokers: kafka-1:9093
-          configuration:
-            max.request.size: 1000000000
+          brokers: kafka:9092,kafka-2:9094
+      bindings:
+        logProducer-out-0:
+          destination: kafka-topic
+          content-type: application/json
+          producer:
+            use-native-encoding: true
 
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: prometheus, health, info
-  health:
-    defaults:
-      enabled: true
-  endpoint:
-    health:
-      show-details: always
-  prometheus:
-    metrics:
-      export:
-        enabled: true
+  kafka:
+    bootstrap-servers: kafka:9092,kafka-2:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+
+logging:
+  level:
+    root: info
+    com.example.logproducer: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
