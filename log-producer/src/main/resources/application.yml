@@ -1,5 +1,6 @@
 server:
-  port: 0
+  port: 8081
+  address: 0.0.0.0
 spring:
   cloud:
     stream:
@@ -14,6 +15,7 @@ spring:
             use-native-encoding: true
 
 
+
   kafka:
     bootstrap-servers: kafka:9092,kafka-2:9094
     producer:
@@ -23,7 +25,7 @@ spring:
 
 logging:
   level:
-    root: info
-    com.example.logproducer: debug
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
+    root: INFO
+    com.example.logproducer: INFO
+
+

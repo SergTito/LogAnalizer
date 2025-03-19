@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class LogMessageDTO {
 
     @Schema(
@@ -41,7 +39,7 @@ public class LogMessageDTO {
 
     @Schema(
             description = "Временная метка лога",
-            example = "2023-10-01T12:34:56Z"
+            example = "2023-10-01T12:34:56"
     )
     @NotNull(message = "Временная метка не может быть null")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")

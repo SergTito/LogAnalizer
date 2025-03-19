@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/log-producer")
+@RequestMapping(value = "/api")
 @Tag(
         name = "Log Producer API",
         description = "API для отправки логов в Kafka. " +
@@ -29,7 +29,8 @@ public class ProducerController {
         this.logProducerService = logProducerService;
     }
 
-    @PostMapping
+
+    @PostMapping(value = "/log-producer")
     @Operation(
             summary = "Отправить лог в Kafka",
             description = "Принимает лог в формате JSON, преобразует его в объект и отправляет в Kafka для дальнейшей обработки."

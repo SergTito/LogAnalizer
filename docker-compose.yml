@@ -63,17 +63,20 @@ services:
       - kafka-net
 
   log-producer:
-    image: log-producer:latest
+    build: ./log-producer
     container_name: log-producer
-    depends_on:
-      - kafka
     ports:
       - "8081:8081"
+    depends_on:
+      - kafka
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      LOGGING_LEVEL_ROOT: DEBUG
       SERVER_PORT: 8081
+    volumes:
+      - C:\Users\TBG\IdeaProjects\log-analytics-system\log-producer\src\main\resources\application.yml:/application.yaml
     networks:
-      - monitoring
+      - kafka-net
 
   log-processor:
     image: log-processor:latest
@@ -91,6 +94,7 @@ services:
       SERVER_PORT: 8082
     networks:
       - monitoring
+      - kafka-net
 
   log-api:
     image: log-api:latest
@@ -107,28 +111,46 @@ services:
     networks:
       - monitoring
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - monitoring
+#  prometheus:
+#    image: prom/prometheus:latest
+#    container_name: prometheus
+#    volumes:
+#      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - "9090:9090"
+#    networks:
+#      - monitoring
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3000:3000"
+#  grafana:
+#    image: grafana/grafana:latest
+#    container_name: grafana
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      - prometheus
+#    environment:
+#      - GF_SECURITY_ADMIN_USER=admin
+#      - GF_SECURITY_ADMIN_PASSWORD=admin
+#    networks:
+#      - monitoring
+
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    restart: always
     depends_on:
-      - prometheus
+      - kafka
+    ports:
+      - "9000:9000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      KAFKA_BROKERCONNECT: "kafka:9092"
+      JVM_OPTS: "-Xms32M -Xmx64M"
+      SERVER_PORT: 9000
     networks:
-      - monitoring
+      - kafka-net
+
+
 
 volumes:
   pg_data:

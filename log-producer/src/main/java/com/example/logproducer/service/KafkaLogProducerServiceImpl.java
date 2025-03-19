@@ -2,6 +2,7 @@ package com.example.logproducer.service;
 
 import com.example.logproducer.dto.LogMessageDTO;
 import com.example.logproducer.service.event.KafkaLogMessageEvent;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -25,6 +26,7 @@ public class KafkaLogProducerServiceImpl implements KafkaLogProducerService {
 
     @Override
     public void sendLogMessage(LogMessageDTO logMessageDTO) {
+        String topicName = logMessageDTO.getServiceName() + "-logs-topic";
 
         KafkaLogMessageEvent kafkaLogEvent = new KafkaLogMessageEvent(
                 logMessageDTO.getServiceName(),
@@ -34,16 +36,18 @@ public class KafkaLogProducerServiceImpl implements KafkaLogProducerService {
         );
 
         CompletableFuture<SendResult<String, KafkaLogMessageEvent>> future =
-                kafkaLogTemplate.send(
-                        "kafka-topic", logMessageDTO.getServiceName(), kafkaLogEvent);
+                kafkaLogTemplate.send(topicName, logMessageDTO.getServiceName(), kafkaLogEvent);
 
-        future.thenAccept(result ->
-                LOGGER.info("Сообщение отправлено в topic: kafka-topic, key: {}", logMessageDTO.getServiceName())
-        ).exceptionally(ex -> {
-            LOGGER.error("Не удалось отправить сообщение в Kafka. Service: {}, Error: {}",
-                    logMessageDTO.getServiceName(), ex.getMessage(), ex);
+        future.thenAccept(result -> {
+            RecordMetadata metadata = result.getRecordMetadata();
+            LOGGER.info("Сообщение отправлено в topic: {}, partition: {}, offset: {}, key: {}",
+                    topicName, metadata.partition(), metadata.offset(), logMessageDTO.getServiceName());
+        }).exceptionally(ex -> {
+            LOGGER.error("Не удалось отправить сообщение в Kafka. Service: {}, Error: {} [{}]",
+                    logMessageDTO.getServiceName(), ex.getClass().getSimpleName(), ex.getMessage(), ex);
             return null;
         });
+
 
     }
 }

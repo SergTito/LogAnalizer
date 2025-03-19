@@ -1,11 +1,11 @@
-# Используем официальный образ OpenJDK 17 с JDK
-FROM eclipse-temurin:17-jdk-alpine
+# Используем OpenJDK 17
+FROM openjdk:17
 
-# Устанавливаем рабочую директорию внутри контейнера
+# Указываем рабочую директорию в контейнере
 WORKDIR /app
 
-# Копируем JAR-файл в контейнер (его нужно будет собрать заранее)
-COPY target/log-producer-*.jar log-producer.jar
-EXPOSE 8083
-# Указываем команду для запуска сервиса
-ENTRYPOINT ["java", "-jar", "log-producer.jar"]
+# Копируем JAR-файл в контейнер
+COPY target/log-producer-0.0.1-SNAPSHOT.jar app.jar
+
+# Запускаем приложение
+ENTRYPOINT ["java", "-jar", "app.jar"]
