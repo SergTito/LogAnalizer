@@ -4,13 +4,25 @@ services:
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_DB: logdb
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: logs_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
 
 
   #Лидеры партиций будут распределены между брокерами.
@@ -87,29 +99,31 @@ services:
     ports:
       - "8082:8082"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdb
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: secret
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logs_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SERVER_PORT: 8082
+    volumes:
+      - C:\Users\TBG\IdeaProjects\log-analytics-system\log-processor\src\main\resources\application.yaml:/application.yaml
     networks:
       - monitoring
       - kafka-net
 
-  log-api:
-    image: log-api:latest
-    container_name: log-api
-    depends_on:
-      - postgres
-    ports:
-      - "8083:8083"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdb
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: secret
-      SERVER_PORT: 8083
-    networks:
-      - monitoring
+#  log-api:
+#    image: log-api:latest
+#    container_name: log-api
+#    depends_on:
+#      - postgres
+#    ports:
+#      - "8083:8083"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdb
+#      SPRING_DATASOURCE_USERNAME: admin
+#      SPRING_DATASOURCE_PASSWORD: secret
+#      SERVER_PORT: 8083
+#    networks:
+#      - monitoring
 
 #  prometheus:
 #    image: prom/prometheus:latest

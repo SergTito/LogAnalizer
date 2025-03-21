@@ -1,26 +1,36 @@
+server:
+  port: 8082
+
+
 spring:
+  kafka:
+    bootstrap-servers: kafka:9092,kafka-2:9094
+    consumer:
+      group-id: log-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.example.logproducer.service.event"
+
   datasource:
-    url: jdbc:postgresql://postgres:5432/log_db
+    url: jdbc:postgresql://localhost:5433/logs_db
     username: postgres
     password: admin
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
   jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: prometheus, health, info
-  health:
-    defaults:
-      enabled: true
-  endpoint:
-    health:
-      show-details: always
-  prometheus:
-    metrics:
-      export:
-        enabled: true
+logging:
+  level:
+    root: INFO
+    com.example.logconsumer: DEBUG

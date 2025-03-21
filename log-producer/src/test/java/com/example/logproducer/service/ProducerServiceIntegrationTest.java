@@ -1,5 +1,7 @@
 package com.example.logproducer.service;
 
+import com.example.logcommon.KafkaLogMessageEvent;
+import com.example.logcommon.LogLevel;
 import com.example.logproducer.dto.LogMessageDTO;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -30,7 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @DirtiesContext
 @EmbeddedKafka(partitions = 1, controlledShutdown = true)
 class ProducerServiceIntegrationTest {
-    private static final String TEST_TOPIC = "test-topic-logs-topic";
+    private static final String TEST_SERVICE_NAME = "test-service";
+    private static final String TEST_TOPIC = TEST_SERVICE_NAME + "-logs-topic"; // Динамическое название топика
 
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
@@ -38,50 +41,52 @@ class ProducerServiceIntegrationTest {
     @Autowired
     private KafkaLogProducerService kafkaLogProducerService;
 
+    private Consumer<String, KafkaLogMessageEvent> consumerServiceTest;
+
     @BeforeEach
     void setUp() {
-        assertNotNull(embeddedKafkaBroker, "Inceddedkafkabroker не инициализируется!");
+        assertNotNull(embeddedKafkaBroker, "EmbeddedKafkaBroker не инициализирован!");
         embeddedKafkaBroker.addTopics(TEST_TOPIC);
         System.out.println("Доступные Топики: " + embeddedKafkaBroker.getTopics());
-    }
 
-    @Test
-    void checks_that_the_producer_is_sending_correct_DTO_to_the_TOPIC_EXAMPLE_EXTERNE() throws InterruptedException {
-
-        LogMessageDTO testLogMessageDTO = new LogMessageDTO(
-                "test-topic",
-                LogLevel.ERROR,
-                "test-message",
-                LocalDateTime.of(2023, 10, 01, 12, 34, 56)
-        );
-
+        // Конфигурация Kafka Consumer
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps("group_consumer_test", "false", embeddedKafkaBroker);
         consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        ConsumerFactory<String, LogMessageDTO> cf = new DefaultKafkaConsumerFactory<>(
+        ConsumerFactory<String, KafkaLogMessageEvent> cf = new DefaultKafkaConsumerFactory<>(
                 consumerProps,
                 new StringDeserializer(),
-                new JsonDeserializer<>(LogMessageDTO.class, false)
+                new JsonDeserializer<>(KafkaLogMessageEvent.class, false)
         );
-        Consumer<String, LogMessageDTO> consumerServiceTest = cf.createConsumer();
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumerServiceTest, TEST_TOPIC);
 
-        System.out.println("Отправка сообщения в Кафку: " + testLogMessageDTO);
+        consumerServiceTest = cf.createConsumer();
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumerServiceTest, TEST_TOPIC);
+    }
+
+    @Test
+    void checks_that_the_producer_sends_correct_DTO_to_the_TOPIC() throws InterruptedException {
+        LogMessageDTO testLogMessageDTO = new LogMessageDTO(
+                TEST_SERVICE_NAME, // Теперь serviceName используется для формирования топика
+                LogLevel.ERROR,
+                "test-message",
+                LocalDateTime.of(2023, 10, 1, 12, 34, 56)
+        );
+
+        System.out.println("Отправка сообщения в Kafka: " + testLogMessageDTO);
         kafkaLogProducerService.sendLogMessage(testLogMessageDTO);
         Thread.sleep(1000);
 
-        System.out.println("Сообщение отправлено в Кафку");
+        System.out.println("Сообщение отправлено в Kafka");
 
-        ConsumerRecord<String, LogMessageDTO> consumerRecordOfLogMessageDTO =
+        ConsumerRecord<String, KafkaLogMessageEvent> consumerRecord =
                 KafkaTestUtils.getSingleRecord(consumerServiceTest, TEST_TOPIC);
 
-        LogMessageDTO valueReceived = consumerRecordOfLogMessageDTO.value();
+        KafkaLogMessageEvent valueReceived = consumerRecord.value();
 
-        assertEquals("test-topic", valueReceived.getServiceName());
+        assertEquals(TEST_SERVICE_NAME, valueReceived.getServiceName());
         assertEquals(LogLevel.ERROR, valueReceived.getLogLevel());
         assertEquals("test-message", valueReceived.getMessage());
 
         consumerServiceTest.close();
-
     }
 }

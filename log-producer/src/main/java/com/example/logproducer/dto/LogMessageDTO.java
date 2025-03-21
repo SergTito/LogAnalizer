@@ -1,6 +1,6 @@
 package com.example.logproducer.dto;
 
-import com.example.logproducer.service.LogLevel;
+import com.example.logcommon.LogLevel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
